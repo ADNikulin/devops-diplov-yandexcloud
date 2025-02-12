@@ -22,6 +22,6 @@ variable "bucket_name" {
 
 variable "service_account-name" {
   type        = string
-  default     = "service"
+  default     = "sa-tf-builder"
   description = "https://yandex.cloud/ru/docs/iam/operations/sa/create"
 }

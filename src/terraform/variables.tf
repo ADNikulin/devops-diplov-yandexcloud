@@ -45,3 +45,9 @@ variable "vpc_name" {
   default     = "netology-dm"
   description = "https://yandex.cloud/ru/docs/vpc/operations/network-create#tf_2"
 }
+
+variable "bucket_name" {
+  type        = string
+  default     = "tf-bucket-state-netology-dm"
+  description = "https://yandex.cloud/ru/docs/storage/concepts/bucket"
+}
