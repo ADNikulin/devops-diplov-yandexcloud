@@ -37,3 +37,4 @@ override.tf.json
 terraform.rc
 src/terraform/.terraform.lock.hcl
 src/terraform-backend/.terraform.lock.hcl
+src/kubespray
