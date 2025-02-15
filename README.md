@@ -62,6 +62,68 @@
 <details>
   <summary>Решение</summary>
 
+  > Для начала был подготовлен новый репозиторий: https://github.com/ADNikulin/devops-diplov-yandexcloud \
+  > В данном репозитории будут лежать конфиги развертывания инрфаструктуры и её настроек. Для тестоового приложения будет свой репозиторий. ВОзможно имело бы смысл делать на все этапы свои репозитории, но пока сделаем так. \
+  > Для работы с данным репозиторием предпологается, что  у вас должен быть настроен тот или иной доступ к яндекс облаку без жесткого указания токена в конфигах. 
+  > Так как у меня имеется имеется настроенный коннект с яндекс облаком, где я периодически генерирую токен для доступа \
+  > - ![alt text](src/imgs/image100.png)
+  > то приступим. \
+  > Был подготовлен сервисный аккаунт c бэкендом и [террафом](https://github.com/ADNikulin/devops-diplov-yandexcloud/tree/master/src/terraform-backend) для его создания:
+  > - [providers.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/providers.tf): конфигурация яндекс провайдера
+  > - [service_account.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/service_account.tf): Настройки сервис аккаунта
+  > - [variables.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/variables.tf): Описание доступных переменных с их дефолтными значениями
+  > - [bucket.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/bucket.tf): Настрйока бакета для хранения стейта. Тут так же настроены экспорты токенов для сервисного аккаунта, при его создание подготовлены скрипты для экспорта токенов доступа к стейту и ключ доступа для работы от имени сервсиного аккаунта. Все ключи экспортируются в .tfvars который игнорируется при пуше в гит.
+  > Запускаем инициализацию, создание и првоеряем созданные ресурсы:
+  > - ![alt text](src/imgs/image99.png)
+  > - ![alt text](src/imgs/image98.png)
+  > - ![alt text](src/imgs/image97.png)
+  > - ![alt text](src/imgs/image96.png)
+  > - ![alt text](src/imgs/image82.png)
+
+  > \
+  > \
+  > Для дальнейшей работы определимся с составом. Так как цель - развернуть кубер, и учитывая то что по заданию нам не нужен продвинутый кластер + нужна экономия ресов, то выбран подход 1 + 2. Где 1 это мастер, 2 воркера. Начнем с этого. Так же стейт надо хранить в бакете, иметь 2 подсети в разных зонах. Это будет базовыое наполнение, которое в прцоессе будет меняться или дополняться. \
+  > \
+  > После первой настройки переходим в основную [директорию](https://github.com/ADNikulin/devops-diplov-yandexcloud/tree/master/src/terraform) с разверткой инфраструктуры. Наполнение следующее: 
+  > - [providers.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/providers.tf): конфигурация яндекс провайдера
+  > - [variables.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/variables.tf): Описание доступных переменных с их дефолтными значениями
+  > - [vars.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/vars.tf): Дополнительные переменные для описания настроек инфраструктуры
+  > - [outputs.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/outputs.tf): Выходные данные
+  > - [network.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/network.tf): Настройки VPC, делается одна network + 2 подсети в разных зонах
+  > - [k8s-worker.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/k8s-worker.tf): конфигурация машин для кубера воркер, конфигурация машин осуществляется в текущем файле
+  > - [k8s-masters.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/k8s-masters.tf): конфигурация машин для кубера master, конфигурация машин осуществляется в текущем файле
+  > - [ansible.tf.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/ansible.tf.tf): После поднятия машин, передает настройки в темплейт файл который в последствии готовит inventory для кубера.
+  > - [backend.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/backend.tf): Доступ к стейту
+  > - [cloud-init.yml](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/init/cloud-init.yml): базовые настройки для поднимаемых машин, ключи доступа тянутся из [vars.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/vars.tf) ssh-keys, тут же прописывается откуда тянуть ключ. + Дополнительно устанавливается пак вспомогательных программ на машину для удобства.
+  > - [hosts.tftpl](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform/templates/hosts.tftpl): Шаблон для генерации inventory файла
+  > \
+  > Перед запуском необходимо проделать пару вещей, это инициализировать новый токен и прокинуть токены для работы со стейтом:
+  > Так как у нас идет автоматическое создание ключа для сервисного аккаунта и установка ег ов текущий профиль \
+  > ![alt text](src/imgs/image81.png)
+  > то сгенерим для него новый IAM токен
+  > - ![alt text](src/imgs/image93.png)
+  > - и экспортируем токены из файла backend.tfvars (Хотя по идее можно автоматом их экспортировать после создания сервисного аккаунта)
+  > - ![alt text](src/imgs/image82.png)
+  > Теперь необходимо инициализировать терраформ для новой инфры под нужным SA: 
+  > ```
+  > terraform init -backend-config="access_key=$ACCESS_KEY" -backend-config="secret_key=$SECRET_KEY"
+  > ``` 
+  > После инициализации наш стейт связан с нашим бакетом. Будем запускать создание инфры и првоерим всё ли создалось то что нам надо и указано: 
+  > - ![alt text](src/imgs/image94.png)
+  > - ![alt text](src/imgs/image92.png)
+  > - ![alt text](src/imgs/image91.png)
+  > - ![alt text](src/imgs/image90.png)
+  > - ![alt text](src/imgs/image89.png)
+  > - ![alt text](src/imgs/image88.png)
+  > - ![alt text](src/imgs/image87.png)
+  > - ![alt text](src/imgs/image83.png)
+  > \
+  > Все ресурсы были подготовлены, файл с inventory для кубера так же готов. Теперь првоерим удаление: 
+  > - ![alt text](src/imgs/image86.png)
+  > - ![alt text](src/imgs/image85.png)
+  > Удаление так же работает. \
+  > В общем поднимем всё заново и будем переходить к следующему шагу. 
+
 </details>
 
 ---
@@ -94,6 +156,33 @@
 <details>
   <summary>Решение</summary>
   
+  > Для развертывания кубера будем использовать подход: [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/). \
+  > Для этого клонируем репозиторий рядом с terraform директорией: 
+  > - ![alt text](src/imgs/image84.png)
+  > Проверяем что файл hposts - (полученный после первой итерации) находится на месте. 
+  > - ![alt text](src/imgs/image83.png)
+  > переходим в папку и делаем предварительную подготовку для запуска кубера: \
+  > Следуя инструкции: https://kubespray.io/#/docs/ansible/ansible?id=installing-ansible начал подготовку kubespray \
+  > Создал environment + установил всё что идет в requirements.txt: 
+  > ```
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ VENVDIR=kubespray-venv
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ KUBESPRAYDIR=/home/user/projects/diplom/devops-diplov-yandexcloud/src/kubespray
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ python3 -m venv $VENVDIR
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ source $VENVDIR/bin/activate
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ cd $KUBESPRAYDIR
+  > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ pip install -U -r requirements.txt
+  > ``` 
+  > Проверим так же доступность хостов через энсибл пинг
+  > - ![alt text](src/imgs/image79.png)
+  > Ну а после запускаем установку через энсибл
+  > ``` ansible-playbook -i inventory/mycluster/ cluster.yml -b -v -u ubuntu ``` \
+  > - ![alt text](src/imgs/image80.png)
+  > Спустя некоторое время всё готово. Далее будем подключаться иготовить конфиг файл для кластера. Для этого нам необходимо создать директорию, скопировать в неё базовый конфиг от кубера и скорректировать права. 
+  > - ![alt text](src/imgs/image78.png)
+  > Ну и проверим всё ли норм. 
+  > - ![alt text](src/imgs/image77.png)
+  > - ![alt text](src/imgs/image76.png)
+
 </details>
 
 ---
