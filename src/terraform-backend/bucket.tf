@@ -24,4 +24,12 @@ resource "yandex_storage_bucket" "yc_tf_bucket-netology_diplom" {
   provisioner "local-exec" {
     command = "echo export SECRET_KEY=${yandex_iam_service_account_static_access_key.sa-static_key.secret_key} >> ../terraform/backend.tfvars"
   }
+
+  provisioner "local-exec" {
+    command = "yc iam key create --output ../terraform/sa-editor-key.json.tfvars --service-account-name ${yandex_iam_service_account.service_account.name}"
+  }
+
+  provisioner "local-exec" {
+    command = "yc config set service-account-key ../terraform/sa-editor-key.json.tfvars && export YC_TOKEN=$(yc iam create-token)"
+  }
 }

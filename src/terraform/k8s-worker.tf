@@ -37,11 +37,12 @@ variable "settings_k8s_worker" {
 }
 
 resource "yandex_compute_instance" "yc-k8s-worker-instance" {
-  depends_on = [yandex_compute_instance.yc-k8s-master-instance]
-  count      = var._k8s_worker_counts
+  depends_on  = [yandex_compute_instance.yc-k8s-master-instance]
+  count       = var._k8s_worker_counts
 
   name        = "${var.settings_k8s_worker.instance.name}-${count.index + 1}"
   platform_id = var.settings_k8s_worker.instance.platform_id
+  zone        = var.ru-central1-b
 
   resources {
     cores         = var.settings_k8s_worker.instance.cores
