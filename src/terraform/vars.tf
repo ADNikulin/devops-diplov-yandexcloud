@@ -1,13 +1,13 @@
 locals {
   ssh-keys = file("~/.ssh/id_rsa.pub")
-  ssh-private-keys = file("~/.ssh/id_rsa")
+  # ssh-private-keys = file("~/.ssh/id_rsa")
 }
 
 data "template_file" "cloudinit" {
   template = file("${path.module}/inits/cloud-init.yml")
   vars = {
     ssh_public_key = local.ssh-keys
-    ssh_private_key = local.ssh-private-keys
+    # ssh_private_key = local.ssh-private-keys
   }
 }
 
