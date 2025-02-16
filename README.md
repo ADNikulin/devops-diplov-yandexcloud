@@ -207,8 +207,55 @@
   1. Git репозиторий с тестовым приложением и Dockerfile.
   2. Регистри с собранным docker image. В качестве регистри может быть DockerHub или [Yandex Container Registry](https://cloud.yandex.ru/services/container-registry), созданный также с помощью terraform.
 
-  ---
-  ### Подготовка cистемы мониторинга и деплой приложения
+</details>
+
+<details>
+  <summary>Решение</summary>
+
+  > Для этогоо шага был подготовлен репозиторий: [diplom-app](https://github.com/ADNikulin/diplom-app). Данный репозиторий это всего лишь набор статичческих файлов, котороее далее будут собираться в образ с использованием nginx. 
+  > - ![alt text](src/imgs/image75.png)
+  > Затянем репозиторий на машину:
+  > - ![alt text](src/imgs/image74.png)
+  > Далее подготовим наше тестовое приложение:
+  > Структура данного репозитория: 
+  > - [src](https://github.com/ADNikulin/diplom-app/tree/master/src) - набор файлов для статики
+  > - [dockerfile](https://github.com/ADNikulin/diplom-app/blob/master/Dockerfile) - Файл для сборки образа. 
+  > ```
+  > FROM nginx:1.27.0
+  > 
+  > RUN rm -rf /usr/share/nginx/html/*
+  > COPY src/ /usr/share/nginx/html/
+  > 
+  > EXPOSE 80
+  > ```
+  > ![alt text](src/imgs/image73.png)
+  > - [index.html](https://github.com/ADNikulin/diplom-app/blob/master/src/index.html) - Начальная HTML страничка для проекта
+  > - [script.js](https://github.com/ADNikulin/diplom-app/blob/master/src/script.js) - JS код для реализации игры minesweeper
+  > - [style.css](https://github.com/ADNikulin/diplom-app/blob/master/src/style.css) - Набор стилей для игры
+  > \
+  > Это базовое наполнение приложения, в последствие его немного поменяем. Так как буду использовать докерхаб для хранения своего приложения, то законнектимся к нему: 
+  > - ![alt text](src/imgs/image72.png)
+  > Подготовим новый репозиторий на [докерхабе](https://hub.docker.com/repository/docker/ejick007/diplom-app/general)
+  > - ![alt text](src/imgs/image69.png)
+  > Теперь соберем приложение и првоерим что он у нас появился на машине
+  > - ![alt text](src/imgs/image71.png)
+  > - ![alt text](src/imgs/image70.png)
+  > И отправляем в registry: 
+  > - ![alt text](src/imgs/image68.png)
+  > - ![alt text](src/imgs/image67.png)
+  > \
+  > Результаты этапа: 
+  > 1. [Git репозиторий](https://github.com/ADNikulin/diplom-app) с тестовым приложением и [Dockerfile](https://github.com/ADNikulin/diplom-app/blob/master/Dockerfile).
+  > 2. [Регистри](https://hub.docker.com/repository/docker/ejick007/diplom-app/general) с собранным [docker image](https://hub.docker.com/repository/docker/ejick007/diplom-app/tags/0.1.0/sha256-60c5862e95e43a3d2e6a096c08f7d17bade5ca3a52f6f6dd69df2882156ff873).
+
+</details>
+
+---
+
+### Подготовка cистемы мониторинга и деплой приложения
+
+<details>
+  <summary>Задача</summary>
 
   Уже должны быть готовы конфигурации для автоматического создания облачной инфраструктуры и поднятия Kubernetes кластера.  
   Теперь необходимо подготовить конфигурационные файлы для настройки нашего Kubernetes кластера.
