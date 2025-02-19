@@ -66,7 +66,7 @@
   > В данном репозитории будут лежать конфиги развертывания инрфаструктуры и её настроек. Для тестоового приложения будет свой репозиторий. ВОзможно имело бы смысл делать на все этапы свои репозитории, но пока сделаем так. \
   > Для работы с данным репозиторием предпологается, что  у вас должен быть настроен тот или иной доступ к яндекс облаку без жесткого указания токена в конфигах. 
   > Так как у меня имеется имеется настроенный коннект с яндекс облаком, где я периодически генерирую токен для доступа \
-  > - ![alt text](src/imgs/image100.png)
+  > - ![alt text](imgs/image100.png)
   > то приступим. \
   > Был подготовлен сервисный аккаунт c бэкендом и [террафом](https://github.com/ADNikulin/devops-diplov-yandexcloud/tree/master/src/terraform-backend) для его создания:
   > - [providers.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/providers.tf): конфигурация яндекс провайдера
@@ -74,11 +74,11 @@
   > - [variables.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/variables.tf): Описание доступных переменных с их дефолтными значениями
   > - [bucket.tf](https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/terraform-backend/bucket.tf): Настрйока бакета для хранения стейта. Тут так же настроены экспорты токенов для сервисного аккаунта, при его создание подготовлены скрипты для экспорта токенов доступа к стейту и ключ доступа для работы от имени сервсиного аккаунта. Все ключи экспортируются в .tfvars который игнорируется при пуше в гит.
   > Запускаем инициализацию, создание и првоеряем созданные ресурсы:
-  > - ![alt text](src/imgs/image99.png)
-  > - ![alt text](src/imgs/image98.png)
-  > - ![alt text](src/imgs/image97.png)
-  > - ![alt text](src/imgs/image96.png)
-  > - ![alt text](src/imgs/image82.png)
+  > - ![alt text](imgs/image99.png)
+  > - ![alt text](imgs/image98.png)
+  > - ![alt text](imgs/image97.png)
+  > - ![alt text](imgs/image96.png)
+  > - ![alt text](imgs/image82.png)
 
   > \
   > \
@@ -99,28 +99,28 @@
   > \
   > Перед запуском необходимо проделать пару вещей, это инициализировать новый токен и прокинуть токены для работы со стейтом:
   > Так как у нас идет автоматическое создание ключа для сервисного аккаунта и установка ег ов текущий профиль \
-  > ![alt text](src/imgs/image81.png)
+  > ![alt text](imgs/image81.png)
   > то сгенерим для него новый IAM токен
-  > - ![alt text](src/imgs/image93.png)
+  > - ![alt text](imgs/image93.png)
   > - и экспортируем токены из файла backend.tfvars (Хотя по идее можно автоматом их экспортировать после создания сервисного аккаунта)
-  > - ![alt text](src/imgs/image82.png)
+  > - ![alt text](imgs/image82.png)
   > Теперь необходимо инициализировать терраформ для новой инфры под нужным SA: 
   > ```
   > terraform init -backend-config="access_key=$ACCESS_KEY" -backend-config="secret_key=$SECRET_KEY"
   > ``` 
   > После инициализации наш стейт связан с нашим бакетом. Будем запускать создание инфры и првоерим всё ли создалось то что нам надо и указано: 
-  > - ![alt text](src/imgs/image94.png)
-  > - ![alt text](src/imgs/image92.png)
-  > - ![alt text](src/imgs/image91.png)
-  > - ![alt text](src/imgs/image90.png)
-  > - ![alt text](src/imgs/image89.png)
-  > - ![alt text](src/imgs/image88.png)
-  > - ![alt text](src/imgs/image87.png)
-  > - ![alt text](src/imgs/image83.png)
+  > - ![alt text](imgs/image94.png)
+  > - ![alt text](imgs/image92.png)
+  > - ![alt text](imgs/image91.png)
+  > - ![alt text](imgs/image90.png)
+  > - ![alt text](imgs/image89.png)
+  > - ![alt text](imgs/image88.png)
+  > - ![alt text](imgs/image87.png)
+  > - ![alt text](imgs/image83.png)
   > \
   > Все ресурсы были подготовлены, файл с inventory для кубера так же готов. Теперь првоерим удаление: 
-  > - ![alt text](src/imgs/image86.png)
-  > - ![alt text](src/imgs/image85.png)
+  > - ![alt text](imgs/image86.png)
+  > - ![alt text](imgs/image85.png)
   > Удаление так же работает. \
   > В общем поднимем всё заново и будем переходить к следующему шагу. 
 
@@ -158,9 +158,9 @@
   
   > Для развертывания кубера будем использовать подход: [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/). \
   > Для этого клонируем репозиторий рядом с terraform директорией: 
-  > - ![alt text](src/imgs/image84.png)
+  > - ![alt text](imgs/image84.png)
   > Проверяем что файл hposts - (полученный после первой итерации) находится на месте. 
-  > - ![alt text](src/imgs/image83.png)
+  > - ![alt text](imgs/image83.png)
   > переходим в папку и делаем предварительную подготовку для запуска кубера: \
   > Следуя инструкции: https://kubespray.io/#/docs/ansible/ansible?id=installing-ansible начал подготовку kubespray \
   > Создал environment + установил всё что идет в requirements.txt: 
@@ -173,15 +173,15 @@
   > user@manager:~/projects/diplom/devops-diplov-yandexcloud/src/kubespray$ pip install -U -r requirements.txt
   > ``` 
   > Проверим так же доступность хостов через энсибл пинг
-  > - ![alt text](src/imgs/image79.png)
+  > - ![alt text](imgs/image79.png)
   > Ну а после запускаем установку через энсибл
   > ``` ansible-playbook -i inventory/mycluster/ cluster.yml -b -v -u ubuntu ``` \
-  > - ![alt text](src/imgs/image80.png)
+  > - ![alt text](imgs/image80.png)
   > Спустя некоторое время всё готово. Далее будем подключаться иготовить конфиг файл для кластера. Для этого нам необходимо создать директорию, скопировать в неё базовый конфиг от кубера и скорректировать права. 
-  > - ![alt text](src/imgs/image78.png)
+  > - ![alt text](imgs/image78.png)
   > Ну и проверим всё ли норм. 
-  > - ![alt text](src/imgs/image77.png)
-  > - ![alt text](src/imgs/image76.png)
+  > - ![alt text](imgs/image77.png)
+  > - ![alt text](imgs/image76.png)
 
 </details>
 
@@ -213,9 +213,9 @@
   <summary>Решение</summary>
 
   > Для этогоо шага был подготовлен репозиторий: [diplom-app](https://github.com/ADNikulin/diplom-app). Данный репозиторий это всего лишь набор статичческих файлов, котороее далее будут собираться в образ с использованием nginx. 
-  > - ![alt text](src/imgs/image75.png)
+  > - ![alt text](imgs/image75.png)
   > Затянем репозиторий на машину:
-  > - ![alt text](src/imgs/image74.png)
+  > - ![alt text](imgs/image74.png)
   > Далее подготовим наше тестовое приложение:
   > Структура данного репозитория: 
   > - [src](https://github.com/ADNikulin/diplom-app/tree/master/src) - набор файлов для статики
@@ -228,21 +228,21 @@
   > 
   > EXPOSE 80
   > ```
-  > ![alt text](src/imgs/image73.png)
+  > ![alt text](imgs/image73.png)
   > - [index.html](https://github.com/ADNikulin/diplom-app/blob/master/src/index.html) - Начальная HTML страничка для проекта
   > - [script.js](https://github.com/ADNikulin/diplom-app/blob/master/src/script.js) - JS код для реализации игры minesweeper
   > - [style.css](https://github.com/ADNikulin/diplom-app/blob/master/src/style.css) - Набор стилей для игры
   > \
   > Это базовое наполнение приложения, в последствие его немного поменяем. Так как буду использовать докерхаб для хранения своего приложения, то законнектимся к нему: 
-  > - ![alt text](src/imgs/image72.png)
+  > - ![alt text](imgs/image72.png)
   > Подготовим новый репозиторий на [докерхабе](https://hub.docker.com/repository/docker/ejick007/diplom-app/general)
-  > - ![alt text](src/imgs/image69.png)
+  > - ![alt text](imgs/image69.png)
   > Теперь соберем приложение и првоерим что он у нас появился на машине
-  > - ![alt text](src/imgs/image71.png)
-  > - ![alt text](src/imgs/image70.png)
+  > - ![alt text](imgs/image71.png)
+  > - ![alt text](imgs/image70.png)
   > И отправляем в registry: 
-  > - ![alt text](src/imgs/image68.png)
-  > - ![alt text](src/imgs/image67.png)
+  > - ![alt text](imgs/image68.png)
+  > - ![alt text](imgs/image67.png)
   > \
   > Результаты этапа: 
   > 1. [Git репозиторий](https://github.com/ADNikulin/diplom-app) с тестовым приложением и [Dockerfile](https://github.com/ADNikulin/diplom-app/blob/master/Dockerfile).
@@ -279,7 +279,11 @@
 
 <details>
   <summary>Решение</summary>
-  
+
+  > На данном этапе мы имеем кластер + регистри с готовым докер файлом. \
+  > Для удобства я поднял ещё одну машину, для доступа в кластер, что бы не коннектиктся непосрдественно к k8s из внешней сети. 
+  > - 
+
 </details>
 
 ---
