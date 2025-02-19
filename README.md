@@ -355,7 +355,34 @@
 <details>
   <summary>Решение</summary>
   
-  > Собственно проще использовать gitlab
+  > Так как у меня есть аккаунт в гитлабе, то буду использовать его. \
+  > Для начала создадим проект на гитлбае и импортируем туда проект из github. 
+  > - ![alt text](imgs/image50.png)
+  > - ![alt text](imgs/image49.png)
+  > - Результат: https://gitlab.com/adnikulin1/minesweeper-app
+  > Теперь репозиторий гитлаба содержит актуальный код и будем работать с ним. Далее нам нужен будет раннер для того что бы билдить проект и что-то с ним делать. Сделаем свой раннер в нашем k8s. 
+  > - Создаеc новый раннер в проекте и создаем егов кубере.
+  > - ![alt text](imgs/image47.png)
+  > - Обновим helm
+  > - ![alt text](imgs/image46.png)
+      ```bash
+      helm repo add gitlab https://charts.gitlab.io
+      helm repo add gitlab https://charts.gitlab.io
+      helm search repo -l gitlab/gitlab-runner
+      helm repo update gitlab
+      ```
+  > - выполлняем команды для создания раннера через helm + так же создадим отдельный неймспейс 
+      ```bash
+      kubectl create namespace builders
+      helm install --namespace builders gitlab-runner gitlab/gitlab-runner \
+        --set rbac.create=true \
+        --set runners.privileged=true \
+        --set gitlabUrl=https://gitlab.com/ \
+        --set runnerRegistrationToken=glrt-t3_siwtUHRvWV6wBhLJUSd
+      ```
+  > - ![alt text](imgs/image45.png)
+  > - ![alt text](imgs/image44.png)
+  > - ![alt text](imgs/image43.png)
 </details>
 
 ---
