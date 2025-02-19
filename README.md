@@ -281,8 +281,50 @@
   <summary>Решение</summary>
 
   > На данном этапе мы имеем кластер + регистри с готовым докер файлом. \
-  > Для удобства я поднял ещё одну машину, для доступа в кластер, что бы не коннектиктся непосрдественно к k8s из внешней сети. 
-  > - 
+  > Для систем монитринга был выбран [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack). Действуем по инструкции и проивзодим установку через helm.
+  > ```bash
+  > $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  > $ helm repo update
+  > ```
+  > - ![alt text](imgs/image65.png)
+  > Далее подготовим файл со значениями для промстека, заменив базовые креды для доступа к графане в [values.yaml](src/prometheus/values.yaml), сам файл берется [отсюда](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml). Так же в рамках команды создадим и сразу новый неймспейс **monitoring** и будем размещать данный инсанс на порту 30001: 
+  > - ![alt text](imgs/image64.png)
+  > - ![alt text](imgs/image63.png)
+  > ```bash
+  > $ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --create-namespace -n monitoring -f ./values.yaml
+  > ```
+  > - ![alt text](imgs/image62.png)
+  > равертывание произошло, проверяем.
+  > - ![alt text](imgs/image59.png)
+  > - ![alt text](imgs/image61.png)
+  > - ![alt text](imgs/image60.png)
+  > \
+  > Теперь приступи к развертыванию приложения. Подготовим два файлика: 
+  > - [app.deployment.yaml](src/app/app.deployment.yaml) - в image указываем ссылку на готовый образ [ejick007/diplom-app:0.1.0](https://hub.docker.com/repository/docker/ejick007/diplom-app/tags/0.1.0/sha256-60c5862e95e43a3d2e6a096c08f7d17bade5ca3a52f6f6dd69df2882156ff873)
+  > - [app.service.yaml](src/app/app.service.yaml) - СЕрвис, который будет размещаться на порту 30002
+  > - + подготовим новый неймспейс: production
+  > - ![alt text](imgs/image58.png)
+  > После всей подготовки, запускаем деплой и проверяем результаты: 
+  > - ![alt text](imgs/image57.png)
+  > - ![alt text](imgs/image56.png)
+  > \ 
+  > Доступ к приложениям имеется с разных нод. Поэтому сделаем балансировщик и запихнем туда все ноды нашего кластера. Дорабатываем терраформ и запускаем его обновление. Далее проверяем доступы: 
+  > - [load-balancer.tf](src/terraform/load-balancer.tf) - создаем целевую группу и два балансировщика с маппингом портов. Для веб приложения с 300001 на 80, для графаны с 30002 на 3000
+  > - ![alt text](imgs/image55.png)
+  > - ![alt text](imgs/image54.png)
+  > - ![alt text](imgs/image53.png)
+  > /
+  > (мысли вслух) Пока выполнял эту часть работы, понял что надо было сделать публичные и приватные подсети. Создать собственно бастион, а кластер разместить в приватных сетях. настройку кластера и сети производить через бастион, как и получать досутп к сети так же через него. При этом балансировщик настроить на кластер кубера ну или HA proxy настроить на нем. Как минимум так на мой взгляд было бы правильнее скорее всего. В общем может переделаю в отдельной ветке. 
+  > /
+  > Когда писал резульатты, понял что графану настроил на 3000 порт. А по факту там свой балансировщик и можно настроит ьна 80 порт. Переделал: 
+  > - ![alt text](imgs/image52.png)
+  > - ![alt text](imgs/image51.png)
+  > /
+  > Результаты этапа: (Предоставленные IP на скринах в настройке ественно будут отличаться от тех что прдеставлены на результатах, так как для тестирования и разработки применял прерываемые машины, и IP меняются. 
+  > 1. Git репозиторий с конфигурационными файлами для настройки Kubernetes. В моем случае формирирование занимается https://github.com/kubernetes-sigs/kubespray. Сам Inventory формируется при запуске с помощью [hosts.tftpl](src/terraform/templates/hosts.tftpl).
+  > 2. Http доступ на 80 порту к web интерфейсу grafana. - http://158.160.159.211/ (admin / qweqwe@!123)
+  > 3. Дашборды в grafana отображающие состояние Kubernetes кластера. - http://158.160.159.211/dashboards
+  > 4. Http доступ на 80 порту к тестовому приложению. - http://158.160.162.177/
 
 </details>
 
@@ -313,6 +355,7 @@
 <details>
   <summary>Решение</summary>
   
+  > Собственно проще использовать gitlab
 </details>
 
 ---
