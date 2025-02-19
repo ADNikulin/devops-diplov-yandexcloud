@@ -12,3 +12,13 @@ output "output_all_instance" {
     }]
   ])
 }
+
+output "grafana-instance" {
+  value = yandex_lb_network_load_balancer.nlb-grafana-app.listener.*.external_address_spec[0].*.address
+  description = "Адрес сетевого балансировщика для Grafana"
+}
+
+output "main-app-instance" {
+  value = yandex_lb_network_load_balancer.nlb-main-app.listener.*.external_address_spec[0].*.address
+  description = "Адрес сетевого балансировщика Web App"
+}

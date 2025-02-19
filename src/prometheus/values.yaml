@@ -1321,7 +1321,7 @@ grafana:
   service:
     portName: http-web
     type: NodePort
-    nodePort: 3001
+    nodePort: 30001
 
   serviceMonitor:
     # If true, a ServiceMonitor CRD is created for a prometheus operator
