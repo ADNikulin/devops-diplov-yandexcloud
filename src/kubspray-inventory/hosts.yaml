@@ -1,0 +1,32 @@
+all:
+  hosts:
+    k8s-master-instance-1:
+      ansible_host: 89.169.146.24
+      ip: 10.0.1.7
+      access_ip: 10.0.1.7
+    
+    k8s-worker-instance-1:
+      ansible_host: 84.201.155.178
+      ip: 10.0.2.29
+      access_ip: 10.0.2.29
+    k8s-worker-instance-2:
+      ansible_host: 89.169.163.19
+      ip: 10.0.2.3
+      access_ip: 10.0.2.3
+  children:
+    kube_control_plane:
+      hosts:
+        k8s-master-instance-1:
+    kube_node:
+      hosts:
+        k8s-worker-instance-1:
+        k8s-worker-instance-2:
+    etcd:
+      hosts:
+        k8s-master-instance-1:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
