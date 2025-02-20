@@ -17,13 +17,6 @@ spec:
     spec:
       containers:
       - name: static-site-app
-        image: ejick007/diplom-app:0.1.0
-        resources:
-          requests:
-            cpu: "1"
-            memory: "300Mi"
-          limits:
-            cpu: "2"
-            memory: "500Mi"
+        image: ejick007/diplom-app:latest
         ports:
         - containerPort: 80
