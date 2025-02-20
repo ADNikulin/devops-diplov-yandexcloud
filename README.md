@@ -159,7 +159,7 @@
   > Для развертывания кубера будем использовать подход: [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/). \
   > Для этого клонируем репозиторий рядом с terraform директорией: 
   > - ![alt text](imgs/image84.png)
-  > Проверяем что файл hposts - (полученный после первой итерации) находится на месте. 
+  > Проверяем что файл hosts - (полученный после первой итерации) находится на месте. 
   > - ![alt text](imgs/image83.png)
   > переходим в папку и делаем предварительную подготовку для запуска кубера: \
   > Следуя инструкции: https://kubespray.io/#/docs/ansible/ansible?id=installing-ansible начал подготовку kubespray \
@@ -177,7 +177,7 @@
   > Ну а после запускаем установку через энсибл
   > ``` ansible-playbook -i inventory/mycluster/ cluster.yml -b -v -u ubuntu ``` \
   > - ![alt text](imgs/image80.png)
-  > Спустя некоторое время всё готово. Далее будем подключаться иготовить конфиг файл для кластера. Для этого нам необходимо создать директорию, скопировать в неё базовый конфиг от кубера и скорректировать права. 
+  > Спустя некоторое время всё готово. Далее будем подключаться и готовить конфиг файл для кластера. Для этого нам необходимо создать директорию, скопировать в неё базовый конфиг от кубера и скорректировать права. 
   > - ![alt text](imgs/image78.png)
   > Ну и проверим всё ли норм. 
   > - ![alt text](imgs/image77.png)
@@ -212,7 +212,7 @@
 <details>
   <summary>Решение</summary>
 
-  > Для этогоо шага был подготовлен репозиторий: [diplom-app](https://github.com/ADNikulin/diplom-app). Данный репозиторий это всего лишь набор статичческих файлов, котороее далее будут собираться в образ с использованием nginx. 
+  > Для этого шага был подготовлен репозиторий: [diplom-app](https://github.com/ADNikulin/diplom-app). Данный репозиторий это всего лишь набор статических файлов, которые далее будут собираться в образ с использованием nginx. 
   > - ![alt text](imgs/image75.png)
   > Затянем репозиторий на машину:
   > - ![alt text](imgs/image74.png)
@@ -383,6 +383,51 @@
   > - ![alt text](imgs/image45.png)
   > - ![alt text](imgs/image44.png)
   > - ![alt text](imgs/image43.png)
+  > \
+  > Теперь разберемся со сборкой и деплоем. Сам по себе прцоесс проходит в два этапа. Так же есть прцоесс тестирования и сборок под разные устройства. Но в нашем случае это будет исключительно сборка в докер хаб и деплой в нашем кластере под браузер. Особо заморачиваться не будем. Поэтому был подготовлен [gitlab-ci.yaml](https://github.com/ADNikulin/diplom-app/blob/master/.gitlab-ci.yml). 
+  > Структура файла простоя. В нем есть стейдж сборки и деплоя: 
+  > - build. Пытался сначала собрать всё через классический подход который [предлагает](https://github.com/ADNikulin/diplom-app/blob/master/.gitlab-ci.yml) gitlab Но были проблемы со сборкой. По этому на их же сайте нашел [using_kaniko](https://docs.gitlab.com/ci/docker/using_kaniko/). В общем в самом файле в переменных готовим имя проекта который будет собираться, готовим лейблы. Так как нет четких условиях по веткам, то будем мобирать любой коммит и отправлять в докер хаб, в качестве лейбла будет хеш коммита, и в любом случае будет заменяться latest лейбл на последний успешный собранный образ. Так же если будет указан тег в репозитории, то будет проихсодить сборка с лейблом этого тега. Что в принципе удовлетворяет поставленным условиям. Готовим глобальные переменные которые будут браться из самого gitlab. Укажем репу с регистри, имя пользователя, токен. пропишем всё там и проверим как работает сборка и пуш его в регистри.
+  > - ![alt text](imgs/image42.png)
+  > - После первого же коммита, пошла сборка. (фейлы и настройку самого файла опущу, поокажу сразу успешные варианты)
+  > - Успешная сборка 
+  > - ![alt text](imgs/image39.png)
+  > - + затегал сборку с новой версией
+  > - ![alt text](imgs/image40.png)
+  > - проверяем в регистри
+  > - ![alt text](imgs/image41.png)
+  > - ![alt text](imgs/image38.png)
+  > \
+  > Далее настроем стадию деплая в [gitlab-ci.yaml](https://github.com/ADNikulin/diplom-app/blob/master/.gitlab-ci.yml) \
+  > - Для данного подхода будем использовать bitnami/kubectl. Так же внесем конфиг kubeconfig в глобальыне переменные в виде base64 формата, а в деплое файле раскодируем обратно и положим в переменную KUBECONFIG. ТАким образом получим управление кластером. В идеале наверное надо было сделать своего пользователя со своими правами и вешать на каждого на свой раннер (prod, develop и т.п.), маркировать тегами раннеры и ветки и делать четкое соотвествие кому и что можн озапускать. Но думаю что тут можно это опустить. так что теги для всех будут k8s и конфиг будет админский. Далее импоьзуем файлы [деплоя](https://github.com/ADNikulin/diplom-app/tree/master/deploy) и в конфиге подставим правильные лейблы и имя образа из стеджа билда + свои дял данног овида сборки. В целом тут тоже можно определять неймспейсы и т.п. в зависимости от ветки, но для простоты будем использовать везде production неймспес. Так же будем использовать `rollout restart` для применения обновления приложения. 
+  > - ![alt text](imgs/image36.png)
+  > - После коммита запускается сборка
+  > - ![alt text](imgs/image37.png)
+  > - ![alt text](imgs/image35.png)
+  > - ![alt text](imgs/image34.png)
+  > - Проверяем теперь доступность приложения
+  > - ![alt text](imgs/image33.png)
+  > \
+  > Приложение доступно. Теперь проведем ряд экспериментов по коммитам и деплою. 
+  > - Внесем изменения в код, закомитим и проверим результаты:
+  > - ![alt text](imgs/image32.png)
+  > - ![alt text](imgs/image31.png)
+  > - ![alt text](imgs/image30.png)
+  > - ![alt text](imgs/image29.png)
+  > Работает, приложение обновилось. Но правда получилась ошибка с кодировкой. Выпустим ещё одну версию, только в этот раз с тегом 0.2.0 и проверим что на бою: 
+  > - ![alt text](imgs/image28.png)
+  > - ![alt text](imgs/image27.png)
+  > - ![alt text](imgs/image26.png)
+  > - ![alt text](imgs/image25.png)
+  > - ![alt text](imgs/image24.png)
+  > - ![alt text](imgs/image23.png)
+  > Всё работает и пушится в регистри докерхаба.
+  > \
+  > Результаты этапа
+  > 1. Интерфейс ci/cd сервиса доступен по http - https://gitlab.com/adnikulin1/minesweeper-app/-/pipelines.
+  > 2. При любом коммите в репозиторие с тестовым приложением происходит сборка и отправка в регистр Docker образа - сборки в докерхабе - https://hub.docker.com/repository/docker/ejick007/diplom-app/general.
+  > 3. При создании тега (например, v1.0.0) происходит сборка и отправка с соответствующим label в регистри, а также деплой соответствующего Docker образа в кластер Kubernetes.
+  > - [dockerhub - 0.2.0](https://hub.docker.com/repository/docker/ejick007/diplom-app/tags/0.2.0/sha256-ba754204611bdc5cecae2cdf4b9ba5d9d30e7a2bd6a325c9408f6320bfe10998)
+  > - [Сборка и тег в гитлабе](https://gitlab.com/adnikulin1/minesweeper-app/-/pipelines/1679437285)
 </details>
 
 ---
@@ -403,5 +448,23 @@
 
 <details>
   <summary>Решение</summary>
-  
+
+  1. Репозиторий с конфигурационными файлами Terraform и готовность продемонстрировать создание всех ресурсов с нуля.
+     - https://github.com/ADNikulin/devops-diplov-yandexcloud/tree/master/src
+  2. Пример pull request с комментариями созданными atlantis'ом или снимки экрана из Terraform Cloud или вашего CI-CD-terraform pipeline.
+     - Не совсем понял... С учетом того что шел по заданию и не использовал терраформ клауд (пошел по пути 1.2.а), все подробно в первом этапе расписано. 
+  3. Репозиторий с конфигурацией ansible, если был выбран способ создания Kubernetes кластера при помощи ansible.
+     - Использовался [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
+  4. Репозиторий с Dockerfile тестового приложения и ссылка на собранный docker image.
+     - https://github.com/ADNikulin/diplom-app/blob/master/Dockerfile
+     - https://hub.docker.com/repository/docker/ejick007/diplom-app/tags/0.2.0/sha256-ba754204611bdc5cecae2cdf4b9ba5d9d30e7a2bd6a325c9408f6320bfe10998
+  5. Репозиторий с конфигурацией Kubernetes кластера.
+     - https://github.com/ADNikulin/devops-diplov-yandexcloud/blob/master/src/kubspray-inventory/hosts.yaml
+  6. Ссылка на тестовое приложение и веб интерфейс Grafana с данными доступа.
+     - http://158.160.159.211/
+     - admin / qweqwe@!123
+  7. Все репозитории рекомендуется хранить на одном ресурсе (github, gitlab)
+     - https://github.com/ADNikulin/devops-diplov-yandexcloud/tree/master/src - terraform
+     - https://github.com/ADNikulin/diplom-app/blob/master/README.md - app
+
 </details>
